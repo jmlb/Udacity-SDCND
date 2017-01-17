@@ -2,7 +2,7 @@ CarND-Alexnet-Feature-Extraction/*.npy
 CarND-Alexnet-Feature-Extraction/*.csv
 CarND-Alexnet-Feature-Extraction/*.p
 application
-CarND-Behavioral_Cloning
+CarND-Behavioral_Cloning/data/
 CarND-Intro_keras/*.p
 CarND-LaneLines-P1/*.mp4
 CarND-LaneLines-P1/extra_data/*.mp4
