@@ -1,7 +1,10 @@
-
-# Instructions on how to get 
-This is work in progress and will update the sh file as needed.
-Next plan is to include tensorflow and scikit-learn.
-so we can get our development environment ready for Udacity Self Driving Car (SDC) Nanodegrees and work on our own.
-
 # MacOS-Container4Ros-SDCND
+
+This is work in progress.
+I will continue to update the sh file as needed.
+
+Next is to include tensorflow and scikit-learn packages.
+
+Here are more info: http://jmbeaujour.com/machinedeeplearning/sdcnd/2016/10/28/setupDocker/
+
+
