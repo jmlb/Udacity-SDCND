@@ -45927,16 +45927,13 @@ when adding the L2-regularizer, the ratio of [loss_train]/[loss_validation] rema
 <p><strong>Answer:</strong></p>
 <p>First, I implemented a shallow Neural Network with 1 convolution operation and 1 hidden fully connected layer with a few kernels and a few units for the connected layer. The model had a validation accuracy of about 85%, with a loss slightly above 1.0.</p>
 <p>With increasing the depth and the width (the number of kernels or number of hidden nodes) of the network, the performance of the model improved significantly. The model performance was more sensitive to the depth of the Network than it was to the width.</p>
-<p>I also included dropout and L2-regularization. Dropout was more efficient at controlling overfitting. In contrast, the L2-regularization would in fact slow down the learning.</p>
-<p>I ran the final model 5 times to get some statistics on the accuracy.
-**</p>
+<p>I also included dropout and L2-regularization. Dropout was more efficient at controlling overfitting.</p>
 <ul>
-<li>Train accuracy: 99.95% +/- 0.04%</li>
-<li>Validation accuracy: 99.29% +/- 0.32%</li>
-<li>Test accuracy: 99.60% +/- 0.28%
-**
-The model performs better than Humans (98.81%) on this task.</li>
+<li>Train accuracy: 100%</li>
+<li>Validation accuracy: 99.96%</li>
+<li>Test accuracy: 98.99%</li>
 </ul>
+<p>The model performs better than Humans (98.81%) on this task.</p>
 
 </div>
 </div>

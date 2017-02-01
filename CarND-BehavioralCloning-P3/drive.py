@@ -14,10 +14,11 @@ from io import BytesIO
 
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
-
+import cv2
 # Fix error with Keras and TensorFlow
 import tensorflow as tf
 tf.python.control_flow_ops = tf
+
 
 
 sio = socketio.Server()
@@ -25,8 +26,15 @@ app = Flask(__name__)
 model = None
 prev_image_array = None
 
+# initialize parameter to record steering angle
+#idx = 0
+#steering_pred = []
+
 @sio.on('telemetry')
 def telemetry(sid, data):
+
+    #global idx
+    #global steering_pred
     # The current steering angle of the car
     steering_angle = data["steering_angle"]
     # The current throttle of the car
@@ -37,13 +45,32 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
+    #convert from BGR to RGB
+    image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+    #save frames locally
+    #fname = 'test_img/fname' + str(idx) +'.jpg'
+    #cv2.imwrite(fname, image_array)
+    
+    # resize image to match training data image size
+    image_array = image_array[80:140, 0:320]
+    image_array = cv2.resize( image_array, (128, 128) ) / 255. - 0.5
     transformed_image_array = image_array[None, :, :, :]
+
+    #
+    #print(transformed_image_array.shape)
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
+    
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
+    # update steering angle record
+    #steering_pred.append(steering_angle)
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.2
+    throttle = 0.8
+     
+    #idx = idx + 1
+    #np.save('test_steering.npy', np.array(steering_pred))
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
+    
 
 
 @sio.on('connect')

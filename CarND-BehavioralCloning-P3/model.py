@@ -1,143 +1,189 @@
-#!/usr/bin/env python
-"""
-Udacity Self Driving Car Nanodegree
-P3 - Behavioral Cloning
-https://github.com/jmlb/Udacity-SDCND
-jmbeaujour.com  
-
-Copyright 2016 Visible Energy Inc. All Rights Reserved.
-"""
-
 import numpy as np
-import sys
-import os
-#from keras.models import Sequential, Graph
-from keras.optimizers import SGD, RMSprop, Adagrad, Adam
+from keras.optimizers import Adam
 from keras.layers.core import Dense, Dropout, Activation
-from keras.layers import Input, Convolution2D, MaxPooling2D, AveragePooling2D, Flatten, PReLU
+from keras.layers import Convolution2D, MaxPooling2D, Flatten, PReLU
 from keras.models import Sequential, Model
 from keras import backend as K
+from keras.regularizers import l2
+import os.path
 import csv
 import cv2
+import glob
+from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
+import json
+from keras import callbacks
+import math
+from pre_processing import *
+SEED = 42
 
 
-def model_continuousSteering():
+
+def continuousSteering(img_sz, activation_fn = 'relu', l2_reg=10**-3):
+    '''
+    steering angle predictor: takes an image and predict the steerign angle value
+    img_sz: size of the image that the model accepts (128, 128, 3)
+    activation_fn: non-linear function - relu, prelu or elu
+    l2_reg - L2 regularization coefficient for fully connected layers
+    '''
+
     # size of pooling area for max pooling
     pool_size = (2, 2)
 
     model = Sequential()
-
-    model.add(Convolution2D(16, 8, 8, subsample=(4, 4), border_mode="same", input_shape=(row, col, ch), activation='relu'))
+    
+    model.add(Convolution2D(8, 5, 5, subsample=(1, 1), border_mode="valid", name='conv1', input_shape=img_sz))
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
+    
+    model.add(MaxPooling2D(pool_size=pool_size))
+    
+    model.add(Convolution2D(8, 5, 5, subsample=(1, 1), border_mode="valid") )
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=pool_size))
+    
+    model.add(Convolution2D(16, 4, 4, subsample=(1, 1), border_mode="valid") )
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=pool_size))
 
-    model.add(Convolution2D(32, 5, 5, subsample=(2, 2), border_mode="same", activation='relu'))
-    model.add(MaxPooling2D(pool_size=pool_size))
-
-    model.add(Convolution2D(64, 5, 5, subsample=(2, 2), border_mode="same", activation='relu' ))
-    model.add(MaxPooling2D(pool_size=pool_size))
+    model.add(Convolution2D(16, 5, 5, subsample=(1, 1), border_mode="valid"))
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
 
     model.add(Flatten())
-    model.add(Dense(256, init='he_normal', activation='relu'))
-    model.add(Dropout(.25))
+    
+    model.add(Dense(128, W_regularizer=l2(l2_reg)))
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
+    
+    model.add(Dense(50, W_regularizer=l2(l2_reg)))
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
+    
+    model.add(Dense(10, W_regularizer=l2(l2_reg)))
+    if activation_fn == 'elu':
+        model.add(Activation('elu'))
+    elif activation_fn == 'prelu':
+        model.add(PReLU())
+    else:
+        model.add(Activation('relu'))
+    
+    model.add(Dense(1, activation='linear', W_regularizer=l2(l2_reg), init='he_normal'))
 
-    model.add(Dense(num_outputs, init='he_normal', activation='relu'))
+    adam = Adam(lr=0.001) #optimizer
+    model.compile(optimizer=adam, loss='mean_squared_error')
 
-    sgd = RMSprop(lr=0.001)
-    model.compile(optimizer=sgd, loss='rms')
-
-    print('Model relu2 is created and compiled..')
+    print('Lightweight Model is created and compiled..- activation: {}'.format(activation_fn))
     return model
 
 
-def model_ladderSteering(img_size):
-    keep_rate = 0.5
-    pool_size = (2, 2)
-    print('Number of outputs:', num_outputs)
-    img_input = Input(shape= img_size)
-    x = Convolution2D(16, 5, 5, subsample=(2, 2), border_mode="same", activation='relu')(img_input)
-    x = MaxPooling2D(pool_size=pool_size)(x)
-    #x = Dropout(0.5)(x)
-    x = Convolution2D(32, 2, 2, subsample=(1, 1), border_mode="same", activation='relu')(x)
-    x = MaxPooling2D(pool_size=pool_size)(x)
-    x = Flatten()(x)
-    x = Dense(128, activation='relu')(x)
-    x = Dropout(keep_rate)(x)
-    #x = Dropout(0.33)(x)
-    o_st = Dense(num_outputs, activation='softmax', name='o_st')(x)
-    o_thr = Dense(num_outputs, activation='softmax', name='o_thr')(x)
-    model = Model(input=img_input, output=[o_st, o_thr])
-    model.compile(optimizer='adam', loss={'o_st': 'categorical_crossentropy', 'o_thr': 'categorical_crossentropy'}, metrics=['accuracy'])
-
-    return model
-
-if __name__ == "__main__":
-
-  try:
-    data_path = os.path.expanduser(sys.argv[1])
-  except Exception as e:
-    print(e, "Usage: ./model.py <DATA-DIR>")
-    sys.exit(-1)
-
-  if not os.path.exists(data_path):
-    print("Directory %s not found." % data_path)
-    sys.exit(-1)
-
-  # open driving log file
-  with open(data_path + '/driving_log.csv', 'r') as csvfile:
-    file_reader = csv.reader(csvfile, delimiter=',')
-    driving_log = []
-    for row in file_reader:
-      driving_log.append(row)
-  # log file includes in order: center_camera|left_camera|right_camera|steering|throttle|brake|speed
-  # column of interest are center_camera and steering 
-  # create summary log with only img name and steering info - header removed
-  driving_log = np.array( driving_log )
-
-  # get column image name and reshape from (nbr_imgs,) to (nbr_imgs, 1)
-  # create a 2 column log with imgs/steering
-
-  driving_log_short = np.hstack( (driving_log[1:, 0].reshape((-1,1)), driving_log[1:,3].reshape((-1,1))))
-
-  i=0
-  img_i = driving_log_short[i][0]
-  print(img_i)
-  img = cv2.imread('data/'+img_i[4:])
-  print(img.shape)
-'''
-  driving_log = 
-  img_height, img_width, img_depth = 
-
-  num_epoch = 
-  batch_size = 
-  num_outputs = 1
-
-  
-
-  model = model_continuousSteering()
-  print(model.summary())
-
-  print("loading images and labels")
-  X = np.load("{}/X_yuv_gray.npy".format(data_path))-0.5
-  y1_steering = np.load("{}/y1_steering.npy".format(data_path))
-  
-  # and trained it via:
-  history = model.fit(X, {'o_st': y1_steering, 'o_thr': y2_throttle}, batch_size=batch_size, nb_epoch=100, verbose=1, validation_split=0.30 )
-  
 
 
+if __name__ == '__main__':
 
+    ############
+    # load drive log csvfile
+    ############
+    data_path = 'data/'
+    # open csv file
+    with open(data_path + 'driving_log.csv', 'r') as csvfile:
+        file_reader = csv.reader(csvfile, delimiter=',')
+        log = []
+        for row in file_reader:
+            log.append(row)
 
-  start_val = round(len(X)*0.8)
-  X_val = X[start_val:start_val + 200]
-  print(y1_steering[0:50])
-  y_val = y1_steering[start_val:start_val + 200, :]
-  pred_val = np.array( model.predict(X_val, batch_size=batch_size) )
-  print(pred_val[0,:,:].shape)
-  print(y_val.shape)
-  np.save('pred_validation.npy', np.hstack([y_val, pred_val[0,:,:]]))
-  print("saving model and weights")
-  with open("{}/autonomia_cnn.json".format(data_path), 'w') as f:
-      f.write(model.to_json())
+    log = np.array( log )
+    log = log[1:,:] #remove the header
 
-  model.save_weights("{}/autonomia_cnn.h5".format(data_path))
-  '''
+    #total number of images accounting for left/right/center
+    print('Dataset: \n {} images | Number of steering data: {}'.format(len(log) * 3, len(log)) ) 
+
+    # Sanity check: count all image files in data/IMG folder and compare to number of imgs listed in csv
+    ls_imgs = glob.glob(data_path+ 'IMG/*.jpg')
+    assert len(ls_imgs) == len(log)*3, 'Actual number of *jpg images does not match with the csv log file'
+
+    #########
+    # Parameters
+    #########
+    test_size = 0.2
+    img_sz = (128, 128, 3)
+    batch_size = 200
+    data_augmentation = 200
+    nb_epoch = 15
+    del_rate = 0.95
+    activation_fn = 'relu'
+    l2_reg = 0.00001
+
+    x_ = log[:, 0] 
+    y_ = log[:, 3].astype(float)
+    x_, y_ = shuffle(x_, y_)
+    # split train/validation set with ratio: 5:1
+    X_train, X_val, y_train, y_val = train_test_split(x_, y_, test_size=test_size, random_state=SEED)
+
+    print('Total number of samples per EPOCH: {}'.format(batch_size * data_augmentation))
+    print('Train set size: {} | Validation set size: {}'.format(len(X_train), len(X_val)))
+        
+    samples_per_epoch = batch_size * data_augmentation 
+    # make validation set size to be a multiple of batch_size
+    nb_val_samples = len(y_val) - len(y_val)%batch_size
+    model =  continuousSteering( img_sz, activation_fn = activation_fn, l2_reg=l2_reg)
+    print(model.summary())
+
+    '''
+    Callbacks: save best and early stop - based on validation loss value
+    1. Save the model after each epoch if the validation loss improved, or
+    2. stop training and save model if the validation loss doesn't improve for 5 consecutive epochs.
+    '''
+    model_path = os.path.expanduser('model.h5')
+    save_best = callbacks.ModelCheckpoint(model_path, monitor='val_loss', verbose=1, 
+                                         save_best_only=True, mode='min')
+    early_stop = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=15, 
+                                         verbose=0, mode='auto')
+    callbacks_list = [early_stop, save_best]
+
+    # batch generator default value: 
+    #training=True, del_rate=0.95, data_dir='data/', monitor=True
+    history = model.fit_generator(batch_generator(X_train, y_train, batch_size, img_sz, training=True, del_rate=del_rate),
+                                  samples_per_epoch=samples_per_epoch,
+                                  nb_val_samples=nb_val_samples,
+                                  validation_data=batch_generator(X_val, y_val, batch_size, img_sz, 
+                                                                  training=False, monitor=False),
+                                  nb_epoch=nb_epoch, verbose=1, callbacks=callbacks_list
+    
+                                 )
+    # save model architecture and weights at the end of the training
+    with open('model.json', 'w') as f:
+            f.write( model.to_json() )
+    model.save('model_.h5')
+    print('Model saved!')
+
+    #clear session to avoid error at the end of program: "AttributeError: 'NoneType' object has no attribute 'TF_DeleteStatus'"
+    # The alternative does not work: import gc; gc.collect()
+    # https://github.com/tensorflow/tensorflow/issues/3388
+    K.clear_session()
