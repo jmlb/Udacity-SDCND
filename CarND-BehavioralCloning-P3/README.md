@@ -1,12 +1,14 @@
-Behavioral Cloning - Self Driving Car (P3)
+# Behavioral Cloning - Self Driving Car (P3)
 
 In this project, we use a similator to train and drive a car in autonomous mode.
 
-Framework: Keras
+* Framework: Keras
 
-Model: light-weight ConvNet takes (128x128x3) images and predicts steering angle
+*Model: light-weight ConvNet takes (128x128x3) images and predicts steering angle
 
-You can also check my write-up on Medium
+* write-up : [medium](https://medium.com/@jmlbeaujour/self-driving-car-simulator-behavioral-cloning-p3-c9f4338c86b0#.chfh0tmg9)
 
-Here is a video of the car driving in autonomous mode on Track2.
+* a walk-thu notebook in *notebook/behavioral_cloning.ipynb*
+
+* Video of the car driving in autonomous mode on Track2: [youtube](https://www.youtube.com/watch?v=esVH7HmJVcg&t=67s)
 
