@@ -5,7 +5,6 @@ application
 
 CarND-Behavioral_Cloning/data/
 CarND-Behavioral_Cloning/notebook/*.npy
-CarND-Behavioral_Cloning/simulator2
 CarND-Behavioral_Cloning/*.npy
 
 CarND-Intro_keras/*.p
