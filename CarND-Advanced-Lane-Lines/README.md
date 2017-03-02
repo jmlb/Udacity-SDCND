@@ -324,7 +324,7 @@ The final video output is available here: [https://youtu.be/4MM7OqZ0-E8](https:/
 
 
 ## Discussion
-One of the most difficult part of the project is to get consistent radius of curvature between the left and the right line. As it can be seen from the video, the value of the radius of curvature changes very apruptly even when using the moving average feature, and despite the fact that the algorithm seems to track well the lane. Furthermore, the transform creates some distorsions of the line: the lines are thinner at the bottom of the image and gets broader at the top of the image. This is likely to affect the fit.
+One of the most difficult parts of the project is to get consistent radius of curvature between the left and the right line. As it can be seen from the video, the value of the radius of curvature changes very apruptly even when using the moving average feature, and despite the fact that the algorithm seems to track well the lane. Furthermore, the transform creates some distorsions of the line: the lines are thinner at the bottom of the image and gets broader at the top of the image. This is likely to affect the fit.
 
 In my implementation, there is a line search for every frame. As suggested in the project material, a technique to make the detector more robust is to use the location of the centroids in the previous frame as starting point.
 
