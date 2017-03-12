@@ -17,3 +17,6 @@ CarND-TrafficSigns-P2/P2_dataset/*.p
 CarND-Alexnet-Feature-Extraction/*.p
 CarND-Alexnet-Feature-Extraction/*.npy
 
+
+CarND-Vehicle-Detection-master/*.mp4
+CarND-Vehicle-Detection-master/all/

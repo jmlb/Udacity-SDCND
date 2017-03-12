@@ -1,0 +1,99 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 4. Lane lines pixels identification
+I use the sliding window method. See line....
+
+[show image]
+
+The first step is to get a histogram of half of the image to get a rough estimate of the position of the lines in the image
+The the window scans alogn the y direction and a blueprint of the pixels in the window is saved and store.
+
+We then fit the hotpixels (i.e non zero piels) to a 2nd order polynomial: f(x) = a2 x**2 + a1 * x + a0
+[see image below]
+The solid lines are the fits.
+Instead of fitting the lane of only the current frame, we accumulate the hotpixels from the past n=9 frames and conduct a polyfit.
+Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+
+I now fit a 2nd order polynomial to both the left and the right lane lines.
+
+Steps:
+
+* calculate a histogram of the bottom half of the image
+* partition the image into 10 horizontal slices
+* starting from the bottom slide, enclose a 120pixel wide window around the left peak and rigt peak of the histogram (split the histogram in half vertically)
+
+* go up to the top of the image to find pixels that are likely to be part of thje left and right lane boundaries, recentering the sliding window/
+* given the 2 groups of pixels (left and rightlane line candidate pixels), fit a 2nd order polynomial to each group
+* The code to perform the above is in the line_fit() function
+
+
+
+
+
+### 5. Radius of curvature
+The radius of curvature is calculated in line .... using the formula:
+
+
+The position of the vehicle with respect to center of the lane is estimated using the following formula:
+
+The code is in line.....
+
+
+
+
+### 6. Result
+
+I use an outlier rejection using MD distance. This enables to further clean the images of artefacts.
+Below is an example where this is useful.
+
+
+[show final image] 
+
+
+I also used the average of the coefficients from past fit
+Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+I implemented this step in lines # through # in my code in yet_another_file.py in the function map_lane(). Here is an example of my result on a test image:
+
+
+## Pipeline (video)
+The final video output is avilable here :
+https://youtube.be/4MM7OqZ0-E8
+
+And for the challenge video, the link is here..........
+
+
+## Discussion
+
+The most difficult part is to get consistent radius curvature. As it can be seen on the video, the curvature is quite jumpy although the lane follows fairly accurately the road lines.
+This is because  a2 is very small and that the radius is propto 1/a2.
+So a small change on a2 (slightly less curvy lines) will result in a much different curvature radius.
+Also coming up with 
+#To confirm that your detected lane lines are real, you might consider:
+#Checking that they have similar curvature
+#Checking that they are separated by approximately the right distance horizontally
+#Checking that they are roughly parallel
+    
+    
+Also, the transform creates some distorsion of the lane which will affet the fit: for example the lane becomes broader at the top of the image, i.e far from the camera location.
+
+
+Interestingly, the more noticeable section of the video where one can see that the tracker is slightly off (see moin...) is not because of shadows but because of a irregular motion of the car: the car is getting on a slightly bumpy road.
+
+
+Although the pipeline algorith fails ont the hard video, when the road is curvy. One way to make it more robust is to adjust the ROI length depending on the value of the road curvature. As the radius becomes smaller the ROI length is changed. 
+The current implementation coudl also be made even more robust and faster by using previous fame result. In my implementation, I search for the line position from scratch at each frame. To make the line detection faster, one could use previous location of the sliding box as the initial guess and update the centroid position for next frame.
+
+Also, instead of performing a polyfit separatly on the 2 line, we coudl impose a constraint on the fit so that the 2 lanes are simulatenously fit where we coudl set a2 to be practically the same.
