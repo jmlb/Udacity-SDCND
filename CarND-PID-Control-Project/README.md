@@ -36,6 +36,7 @@ Self-Driving Car Engineer Nanodegree Program
 min_thr the minimum throttle allowed : the throttle is restricted to the range [0.3, 0.8]
 
 ## Discussion
+[watch the video](https://youtu.be/_wUoVPyukuI)
 
 ### Description of how the final hyperparameters were chosen.
 I used both visualization and the not-normalized **rms error** to find the optimum PID gains. The PID gains are adjusted to reduce the not-normalized **rms error** accumulated over the course of a full lap completed by the agent.
