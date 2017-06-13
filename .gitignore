@@ -33,5 +33,8 @@ CarND-Unscented-Kalman-Filter-Project/kalman_tracker_linux/
 CarND-Unscented-Kalman-Filter-Project/build/CMakeFiles/
 CarND-Unscented-Kalman-Filter-Project/build/.ipynb_checkpoints/
 
+#CarND-Kidnapped-Vehicle-Project
+CarND-Kidnapped-Vehicle-Project/*.ogv
+CarND-Kidnapped-Vehicle-Project/term2_sim_linux
 #CarND-PID-Control-Project
 CarND-PID-Control-Project/*.ogv
