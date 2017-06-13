@@ -17,6 +17,21 @@ CarND-TrafficSigns-P2/P2_dataset/*.p
 CarND-Alexnet-Feature-Extraction/*.p
 CarND-Alexnet-Feature-Extraction/*.npy
 
+#CarND-Vehicle-Detection
+CarND-Vehicle-Detection/*.mp4
+CarND-Vehicle-Detection/all/
+CarND-Vehicle-Detection/*.p
 
-CarND-Vehicle-Detection-master/*.mp4
-CarND-Vehicle-Detection-master/all/
+#CarND-KalmanFilter
+CarND-KalmanFilter/kalman_tracker_linux/
+CarND-KalmanFilter/CarND-Extended-Kalman-Filter-Project/build/CMakeFiles/
+CarND-KalmanFilter/CarND-Extended-Kalman-Filter-Project/CarND-Mercedes-SF-Utilities-master/
+
+#CarND-Unscented-Kalman-Filter-Project
+#simulator
+CarND-Unscented-Kalman-Filter-Project/kalman_tracker_linux/
+CarND-Unscented-Kalman-Filter-Project/build/CMakeFiles/
+CarND-Unscented-Kalman-Filter-Project/build/.ipynb_checkpoints/
+
+#CarND-PID-Control-Project
+CarND-PID-Control-Project/*.ogv
